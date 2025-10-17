@@ -1,26 +1,14 @@
 {
   "name": "frontend",
   "version": "0.0.0",
+  "private": true,
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "overrides": [
-      {
-        "files": "*.html",
-        "options": {
-          "parser": "angular"
-        }
-      }
-    ]
-  },
-  "private": true,
   "dependencies": {
     "@angular/cdk": "^20.2.2",
     "@angular/common": "^20.2.0",
@@ -37,7 +25,7 @@
   },
   "devDependencies": {
     "@angular/build": "^20.2.2",
-    "@angular/cli": "^20.2.2",
+    "@angular/cli": "^20.3.6",
     "@angular/compiler-cli": "^20.2.0",
     "@types/jasmine": "~5.1.0",
     "jasmine-core": "~5.9.0",
@@ -47,5 +35,17 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.9.2"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
   }
 }
