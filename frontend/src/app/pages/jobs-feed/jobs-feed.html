@@ -1,0 +1,57 @@
+<div class="page-layout">
+
+  <aside class="filters-sidebar">
+    <h3>Filtrar Por</h3>
+    <form [formGroup]="filterForm" class="filter-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Buscar por título</mat-label>
+        <input matInput formControlName="search" placeholder="Ex: Barista">
+      </mat-form-field>
+
+      <h4>Orçamento (BRL)</h4>
+      <div class="budget-fields">
+        <mat-form-field appearance="outline">
+          <mat-label>Mín</mat-label>
+          <input matInput formControlName="minBudget" type="number" placeholder="0">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Máx</mat-label>
+          <input matInput formControlName="maxBudget" type="number" placeholder="1000">
+        </mat-form-field>
+      </div>
+    </form>
+  </aside>
+
+  <main class="feed-container">
+    <div class="feed-header">
+      <h1 class="feed-title">Encontre Seu Próximo Projeto</h1>
+      <a *ngIf="userRole === 'CLIENT'" mat-raised-button color="primary" routerLink="/jobs/new">
+        Publicar uma Vaga
+      </a>
+    </div>
+
+    <div *ngIf="jobs.length > 0; else noJobs" class="jobs-grid">
+
+      <mat-card *ngFor="let job of jobs" class="job-card" [routerLink]="['/jobs', job.id]">
+        <mat-card-header>
+          <mat-card-title>{{ job.title }}</mat-card-title>
+          <mat-card-subtitle>Publicado por {{ job.author.companyName || job.author.user.firstName }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p>
+            {{ job.description.substring(0, 100) }}...
+          </p>
+          <p class="budget" *ngIf="job.budget">
+            Orçamento: {{ job.budget | currency:'BRL' }}
+          </p>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+
+    <ng-template #noJobs>
+      <p>Nenhuma vaga encontrada com os filtros atuais.</p>
+    </ng-template>
+  </main>
+
+</div>

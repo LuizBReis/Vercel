@@ -1,0 +1,155 @@
+// backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CLIENT
+  FREELANCER
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  INTERNSHIP
+}
+
+enum ApplicationStatus {
+  PENDING
+  SHORTLISTED
+  REJECTED
+}
+
+// O User agora é focado em autenticação e identidade básica
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações com os novos perfis
+  freelancerProfile FreelancerProfile?
+  clientProfile     ClientProfile?
+
+  // A relação de candidaturas permanece
+  applications JobApplication[]
+
+  messages Message[]
+}
+
+// --- NOVO MODELO: PERFIL DO FREELANCER ---
+model FreelancerProfile {
+  id          String   @id @default(cuid())
+  description String?  @db.Text // A descrição agora mora aqui
+  
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+  skills          Skill[]
+  workExperiences WorkExperience[]
+}
+
+// --- NOVO MODELO: PERFIL DO CLIENTE ---
+model ClientProfile {
+  id          String  @id @default(cuid())
+  companyName String?
+  location    String?
+  description String? @db.Text // <-- ADICIONE ESTA LINHA
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+  jobs Job[]
+}
+
+model Job {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  budget       Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // A vaga é postada por um ClientProfile
+  authorId String
+  author   ClientProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  applications JobApplication[]
+}
+
+model JobApplication {
+  id          String            @id @default(cuid())
+  createdAt   DateTime          @default(now())
+  status      ApplicationStatus @default(PENDING)
+
+  jobId       String
+  job         Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  applicantId String
+  applicant   User   @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  // Relação com a conversa que pode ser iniciada a partir desta candidatura
+  conversation Conversation?
+
+  @@unique([jobId, applicantId])
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  isSuggested Boolean  @default(false)
+
+  freelancers FreelancerProfile[]
+}
+
+model WorkExperience {
+  id                  String            @id @default(cuid())
+  title               String
+  company             String
+  employmentType      EmploymentType
+  location            String?
+  startDate           DateTime
+  endDate             DateTime?
+  description         String?           @db.Text
+
+  freelancerProfileId String
+  freelancerProfile   FreelancerProfile @relation(fields: [freelancerProfileId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id    String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  isLocked      Boolean  @default(false)
+
+  // Relação um-para-um com a candidatura que originou a conversa
+  application   JobApplication @relation(fields: [applicationId], references: [id])
+  applicationId String         @unique
+
+  // Uma conversa tem uma lista de mensagens
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  // Relação com a conversa à qual a mensagem pertence
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+
+  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId String
+}
